@@ -1,10 +1,20 @@
-import { Form, Input, Button, Checkbox } from "antd";
+import { Form, Input, Button, Checkbox, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { loginRequest } from "../../../../api/login";
+
+type TFormData = {
+  username: string;
+  password: string;
+};
 
 const LoginForm = () => {
-  const onFinish = (values: any) => {
+  const onFinish = async (values: TFormData) => {
     //底层用Promise链式调用，只有在validator的Promise不被reject时才会调用该回调
-    console.log("通过ajax向服务器发送请求");
+    let res = await loginRequest(values.username, values.password);
+    if (res.status === 1) {
+      message.warning("用户名密码出错", 3);
+     
+    }
   };
 
   async function pwdValidator(_: any, value: string): Promise<string> {
