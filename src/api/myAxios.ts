@@ -4,6 +4,10 @@ import qs from "querystring";
 import { message } from "antd";
 import { BASE_URL } from "../config/config";
 
+//发送请求时的伪进度条
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+
 const myAxios = axios.create({
   baseURL: BASE_URL,
 });
@@ -17,6 +21,7 @@ const myAxios = axios.create({
 
 //配置请求拦截器,实现用urlencoded发送post请求
 myAxios.interceptors.request.use((config) => {
+  NProgress.start();
   const { method, data } = config;
   //如果为post请求时
   if (method?.toLowerCase() === "post") {
@@ -31,9 +36,11 @@ myAxios.interceptors.request.use((config) => {
 //配置响应拦截器
 myAxios.interceptors.response.use(
   (response) => {
+    NProgress.done();
     return response.data;
   },
   (error) => {
+    NProgress.done();
     //统一拦截各种网络错误
     message.error(error.message, 3);
     //中止Promise
