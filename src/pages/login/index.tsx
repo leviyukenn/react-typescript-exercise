@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { Redirect, RouteComponentProps } from "react-router-dom";
 
 import { Form, Input, Button, Checkbox, message } from "antd";
@@ -9,10 +9,10 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { loginRequest } from "../../api/login";
 import { addUserInfo } from "../../redux/actions/login";
 import { UserInfo } from "../../redux/typings/login";
-import { ReduxState } from "../../redux/typings/index";
 
 import logo from "./imgs/logo.png";
 import "./css/index.less";
+import { RootState } from "../../redux/reducers";
 
 const { Header, Content } = Layout;
 
@@ -21,17 +21,22 @@ type FormData = {
   password: string;
 };
 
-interface PropsType extends RouteComponentProps {
-  addUserInfo: typeof addUserInfo;
-  isLogin: boolean;
-}
+// interface PropsType extends RouteComponentProps {
+//    addUserInfo: typeof addUserInfo;
+//    isLogin: boolean;
+// }
 
-function Login(props: PropsType) {
+//从react-router-dom引入路由组件的props类型
+export default function Login(props: RouteComponentProps) {
+  //调用react-redux的Hook
+  const isLogin = useSelector((state: RootState) => state.loginState.isLogin);
+  const dispatch = useDispatch();
+
   const onFinish = async (values: FormData) => {
     //底层用Promise链式调用，只有在validator的Promise不被reject时才会调用该回调
     let res = await loginRequest(values.username, values.password);
     if (res.status === 0) {
-      props.addUserInfo(res.data as UserInfo);
+      dispatch(addUserInfo(res.data as UserInfo));
 
       props.history.push("/admin");
     } else {
@@ -54,7 +59,7 @@ function Login(props: PropsType) {
   }
 
   //如果已经登录则重定向到admin界面
-  if (props.isLogin) {
+  if (isLogin) {
     return <Redirect to="/admin" />;
   }
   return (
@@ -120,11 +125,11 @@ function Login(props: PropsType) {
   );
 }
 
-const mapDispatchToProps = {
-  addUserInfo,
-};
+// const mapDispatchToProps = {
+//   addUserInfo,
+// };
 
-export default connect(
-  (state: ReduxState) => ({ isLogin: state.loginState.isLogin }),
-  mapDispatchToProps
-)(Login);
+// export default connect(
+//   (state: RootState) => ({ isLogin: state.loginState.isLogin }),
+//   mapDispatchToProps
+// )(Login);
