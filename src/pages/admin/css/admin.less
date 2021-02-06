@@ -1,0 +1,43 @@
+.admin {
+  height: 100%;
+  .header {
+    height: 70px;
+    line-height: 68px;
+
+    .logo {
+      img {
+        height: 100%;
+      }
+      float: left;
+      width: 120px;
+      height: 100%;
+      margin-right: 24px;
+      //   background: rgba(255, 255, 255, 0.3);
+    }
+    .header-buttons {
+      float: right;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      & > li {
+        font-size: 20px;
+        margin: 0 10px;
+      }
+    }
+    .header-nav {
+      float: right;
+      height: 100%;
+      font-size: 20px;
+    }
+  }
+  .content-container {
+    padding: 24px 24px 0 24px;
+    .content {
+      padding: 24px 24px 0 24px;
+    }
+  }
+}
+
+.site-layout-background {
+  background: #fff;
+}

@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Route, Switch } from "react-router-dom";
+import { Redirect, Route, Switch } from "react-router-dom";
 import Login from "./pages/login";
 import Admin from "./pages/admin";
 
@@ -9,6 +9,7 @@ function App() {
       <Switch>
         <Route path="/login" component={Login}></Route>
         <Route path="/admin" component={Admin}></Route>
+        <Redirect to="/admin" />
       </Switch>
     </Fragment>
   );

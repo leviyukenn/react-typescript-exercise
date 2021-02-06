@@ -1,16 +1,16 @@
 import React from "react";
-import { connect, useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Redirect, RouteComponentProps } from "react-router-dom";
 
 import { Form, Input, Button, Checkbox, message } from "antd";
 import { Layout } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
-import { loginRequest } from "../../api/login";
+import { reqLogin } from "../../api/requests";
 import { addUserInfo } from "../../redux/actions/login";
 import { UserInfo } from "../../redux/typings/login";
 
-import logo from "./imgs/logo.png";
+import logo from "../../static/imgs/logo.png";
 import "./css/index.less";
 import { RootState } from "../../redux/reducers";
 
@@ -34,10 +34,10 @@ export default function Login(props: RouteComponentProps) {
 
   const onFinish = async (values: FormData) => {
     //底层用Promise链式调用，只有在validator的Promise不被reject时才会调用该回调
-    let res = await loginRequest(values.username, values.password);
+    let res = await reqLogin(values.username, values.password);
     if (res.status === 0) {
       dispatch(addUserInfo(res.data as UserInfo));
-
+      //跳转到admin
       props.history.push("/admin");
     } else {
       message.warning("用户名密码出错", 3);
