@@ -38,7 +38,7 @@ export default function Login(props: RouteComponentProps) {
     if (res.status === 0) {
       dispatch(addUserInfo(res.data as UserInfo));
       //跳转到admin
-      props.history.push("/admin");
+      props.history.push("/admin/home");
     } else {
       message.warning("用户名密码出错", 3);
     }
@@ -60,7 +60,7 @@ export default function Login(props: RouteComponentProps) {
 
   //如果已经登录则重定向到admin界面
   if (isLogin) {
-    return <Redirect to="/admin" />;
+    return <Redirect to="/admin/home" />;
   }
   return (
     <Layout className="login">
