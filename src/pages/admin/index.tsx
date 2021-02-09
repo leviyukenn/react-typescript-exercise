@@ -16,10 +16,6 @@ export default function Admin(props: RouteComponentProps) {
   const loginState = useSelector((state: RootState) => state.loginState);
   const { isLogin } = loginState;
 
-  const getCategoryList = async () => {
-    let list = await reqCategory();
-    console.log(list);
-  };
 
   //如果没登录则重定向回login界面
   if (!isLogin) {

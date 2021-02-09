@@ -2,7 +2,7 @@ import React from "react";
 import { Menu, Layout } from "antd";
 import { useLocation } from "react-router-dom";
 
-import { menuList, MenuItem } from "../../../config/menuConfig";
+import { routeList, RouteItem } from "../../../config/routeConfig";
 import { Link } from "react-router-dom";
 
 const { SubMenu } = Menu;
@@ -25,13 +25,13 @@ export default function CustomSider() {
         defaultOpenKeys={openKeys}
         style={{ height: "100%", borderRight: 0 }}
       >
-        {createMenuList(menuList)}
+        {createMenuList(routeList)}
       </Menu>
     </Sider>
   );
 }
 
-function createMenuList(menuList: MenuItem[]) {
+function createMenuList(menuList: RouteItem[]) {
   return menuList.map((item) => {
     if (!item.children) {
       return (

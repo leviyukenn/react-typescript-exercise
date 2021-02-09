@@ -22,7 +22,6 @@ const CustomHeader = () => {
   const loginState = useSelector((state: RootState) => state.loginState);
   const [isFullScreen, setFullScreen] = useState(false);
   const dispatch = useDispatch();
-  console.log("----header----");
 
   useEffect(() => {
     (screenfull as Screenfull).onchange(() =>

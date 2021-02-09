@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Breadcrumb, Layout } from "antd";
 import { Link, Redirect, Route, Switch, useLocation } from "react-router-dom";
-import { MenuItem, menuList } from "../../../config/menuConfig";
+import { RouteItem, routeList } from "../../../config/routeConfig";
 
 const { Content } = Layout;
 
-export default function Contents() {
-  const [breadCrumbs, setBreadCrumbs] = useState<MenuItem[]>([]);
+function useBreadCrumbs(): RouteItem[] {
+  const [breadCrumbs, setBreadCrumbs] = useState<RouteItem[]>([]);
   const location = useLocation();
   //通过当前路径获取所有根路径，从而生成面包屑导航
   useEffect(() => {
     const pathKeys = location.pathname
       .split("/")
       .filter((key) => key && key !== "admin");
-    let childrens = menuList;
-    const breadCrumbList: MenuItem[] = [];
+    let childrens = routeList;
+    const breadCrumbList: RouteItem[] = [];
     pathKeys.forEach((key) => {
       const menuItem = childrens.find((item) => item.key === key);
       if (!menuItem) throw new Error("no such menu item.");
@@ -24,6 +24,12 @@ export default function Contents() {
 
     setBreadCrumbs(breadCrumbList);
   }, [location]);
+
+  return breadCrumbs;
+}
+
+export default function Contents() {
+  const breadCrumbs = useBreadCrumbs();
 
   return (
     <Layout className="content-container">
@@ -38,10 +44,14 @@ export default function Contents() {
       </Breadcrumb>
       <Content className="site-layout-background content">
         <Switch>
-          {menuList.map((item) => {
-            return <Route path={item.path}>{item.component}</Route>;
+          {routeList.map((item) => {
+            return (
+              <Route key={item.key} path={item.path}>
+                {item.component}
+              </Route>
+            );
           })}
-          <Redirect to={menuList[0].path}></Redirect>
+          <Redirect to={routeList[0].path}></Redirect>
         </Switch>
       </Content>
     </Layout>
