@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { Redirect, RouteComponentProps } from "react-router-dom";
 import { Layout } from "antd";
 
-import { reqCategory } from "../../api/requests";
 import { RootState } from "../../redux/reducers";
 import "./css/admin.less";
 import Header from "./Header";
@@ -15,7 +14,6 @@ const { Footer } = Layout;
 export default function Admin(props: RouteComponentProps) {
   const loginState = useSelector((state: RootState) => state.loginState);
   const { isLogin } = loginState;
-
 
   //如果没登录则重定向回login界面
   if (!isLogin) {
