@@ -1,5 +1,5 @@
-import { Card, message, Table, Modal, Form, Input } from "antd";
-import Button from "antd/es/button";
+import { Card, message, Table, Modal, Form, Input, Button } from "antd";
+
 import { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useState } from "react";
 
@@ -7,49 +7,35 @@ import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   reqAddCategory,
   reqCategoryList,
-  CategoryResponse,
   reqUpdateCategory,
 } from "../../../../../api/requests";
-import {
-  MESSAGE_DURATION,
-  PAGE_SIZE,
-  RESPONSE_STATUS,
-} from "../../../../../config/config";
 
-interface Category {
-  key: string;
-  name: string;
-}
+import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
+import { Category, RESPONSE_STATUS } from "../../../../../api/types";
+
 enum OPERATION_TYPE {
   ADD = "添加分类",
   UPDATE = "修改分类",
 }
 
+// type mapResponseToState = (preState:)
+
 function useCategoryList() {
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [isPending, setPending] = useState(false);
-
-  const mapResponseToCategory = useCallback(
-    (item: CategoryResponse): Category => ({
-      key: item._id,
-      name: item.name,
-    }),
-    []
-  );
 
   //加载分类列表
   const load = useCallback(async () => {
     setPending(true);
     const response = await reqCategoryList();
     if (response.status === RESPONSE_STATUS.SUCCESS) {
-      const list = response.data!.map(mapResponseToCategory);
-      setCategoryList(list.reverse());
+      setCategoryList(response.data!.reverse());
       setPending(false);
     } else {
       setPending(false);
       throw new Error(response.msg);
     }
-  }, [mapResponseToCategory]);
+  }, []);
 
   //添加分类
   const addCategory = useCallback(
@@ -57,17 +43,14 @@ function useCategoryList() {
       setPending(true);
       const res = await reqAddCategory(categoryName, parentId);
       if (res.status === RESPONSE_STATUS.SUCCESS) {
-        setCategoryList((preState) => [
-          mapResponseToCategory(res.data!),
-          ...preState,
-        ]);
+        setCategoryList((preState) => [res.data!, ...preState]);
         setPending(false);
       } else {
         setPending(false);
         throw new Error(res.msg);
       }
     },
-    [mapResponseToCategory]
+    []
   );
 
   //修改分类
@@ -78,7 +61,7 @@ function useCategoryList() {
       if (res.status === RESPONSE_STATUS.SUCCESS) {
         setCategoryList((preState) =>
           preState.map((category) => {
-            if (category.key === categoryId) {
+            if (category._id === categoryId) {
               category.name = categoryName;
             }
             return category;
@@ -125,7 +108,7 @@ export default function CategoryComponent() {
         setIsModalVisible(true);
       };
     },
-    []
+    [form]
   );
 
   const showAddCategoryModal = useCallback(() => {
@@ -169,10 +152,10 @@ export default function CategoryComponent() {
     {
       key: "operation",
       title: "操作",
-      dataIndex: "key",
-      render: (_, { key, name }) => {
+      dataIndex: "_id",
+      render: (_, { _id, name }) => {
         return (
-          <Button onClick={showUpdateCategoryModal(key, name)}>修改分类</Button>
+          <Button onClick={showUpdateCategoryModal(_id, name)}>修改分类</Button>
         );
       },
       width: "25%",
@@ -205,6 +188,7 @@ export default function CategoryComponent() {
           showSizeChanger: false,
         }}
         loading={isPending}
+        rowKey="_id"
       />
       <Modal
         title={operationType}

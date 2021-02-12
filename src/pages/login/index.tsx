@@ -60,7 +60,7 @@ export default function Login(props: RouteComponentProps) {
 
   //如果已经登录则重定向到admin界面
   if (isLogin) {
-    return <Redirect to="/admin/home" />;
+    return <Redirect to="/admin" />;
   }
   return (
     <Layout className="login">

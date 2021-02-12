@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Menu, Layout } from "antd";
 import { useLocation } from "react-router-dom";
 
@@ -9,19 +9,19 @@ const { SubMenu } = Menu;
 const { Sider } = Layout;
 
 export default function CustomSider() {
-  
   const location = useLocation();
-
-  const openKeys = location.pathname
-    .split("/")
-    .filter((path) => path && path !== "admin");
-  const selectedKey = openKeys.slice(-1);
+  const openKeys = useMemo(
+    () =>
+      location.pathname.split("/").filter((path) => path && path !== "admin"),
+    [location]
+  );
+  const selectedKey = useMemo(() => openKeys.slice(-1), [openKeys]);
 
   return (
     <Sider width={200} className="site-layout-background">
       <Menu
         mode="inline"
-        defaultSelectedKeys={selectedKey}
+        selectedKeys={selectedKey}
         defaultOpenKeys={openKeys}
         style={{ height: "100%", borderRight: 0 }}
       >

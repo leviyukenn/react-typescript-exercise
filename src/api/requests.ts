@@ -1,4 +1,6 @@
+import { PAGE_SIZE } from "../config/config";
 import myAxios from "./myAxios";
+import { Category, ProductsPerPage, Response } from "./types";
 
 export async function reqLogin(username: string, password: string) {
   return myAxios.post("/login", {
@@ -9,14 +11,14 @@ export async function reqLogin(username: string, password: string) {
 
 export async function reqCategoryList(
   parentId: string = "0"
-): Promise<Response<CategoryResponse[]>> {
+): Promise<Response<Category[]>> {
   return myAxios.get("/manage/category/list", { params: { parentId } });
 }
 
 export async function reqAddCategory(
   categoryName: string,
   parentId: string = "0"
-): Promise<Response<CategoryResponse>> {
+): Promise<Response<Category>> {
   return myAxios.post("/manage/category/add", {
     parentId: parentId,
     categoryName: categoryName,
@@ -26,21 +28,28 @@ export async function reqAddCategory(
 export async function reqUpdateCategory(
   categoryId: string,
   categoryName: string
-): Promise<Response<CategoryResponse>> {
+): Promise<Response<Category>> {
   return myAxios.post("/manage/category/update", {
     categoryId,
     categoryName,
   });
 }
 
-interface Response<T> {
-  status: number;
-  data?: T;
-  msg?: string;
+export async function reqProductsPerPage(
+  pageNum: number,
+  pageSize: number = PAGE_SIZE
+): Promise<Response<ProductsPerPage>> {
+  return myAxios.get("/manage/product/list", {
+    params: { pageNum, pageSize },
+  });
 }
 
-export interface CategoryResponse {
-  _id: string;
-  name: string;
-  [propName: string]: any;
+export async function reqUpdateProductStatus(
+  productId: string,
+  status: number
+): Promise<Response<string>> {
+  return myAxios.post("/manage/product/updateStatus", {
+    productId,
+    status,
+  });
 }
