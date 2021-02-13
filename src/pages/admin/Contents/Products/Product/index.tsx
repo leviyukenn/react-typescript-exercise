@@ -1,93 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Card, Table, Input, Button, message, Select } from "antd";
+import { Card, Table, Input, Button, Select } from "antd";
 import { ColumnsType } from "antd/es/table";
-import { Product, RESPONSE_STATUS, Pagination } from "../../../../../api/types";
-import {
-  reqProductsPerPage,
-  reqUpdateProductStatus,
-} from "../../../../../api/requests";
-import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
-import Products from "..";
+import { Product } from "../../../../../api/types";
 
+import { useProductList } from "./hook";
 const { Option } = Select;
 const { Search } = Input;
-
-function useProductList() {
-  const [productList, setProductList] = useState<Product[]>([]);
-  const [isPending, setPending] = useState(false);
-  const [lodings, setLodings] = useState<boolean[]>(
-    new Array(productList.length).fill(false, 0)
-  );
-  const [pagination, setPagination] = useState<Pagination>({
-    pageNum: 1,
-    total: 1,
-    pages: 1,
-    pageSize: PAGE_SIZE,
-  });
-
-  //加载商品列表
-  const load = useCallback(
-    async (pageNum: number = 1, pageSize: number = PAGE_SIZE) => {
-      setPending(true);
-      const response = await reqProductsPerPage(pageNum, pageSize);
-      if (response.status === RESPONSE_STATUS.SUCCESS) {
-        const { pageNum, total, pages, pageSize, list } = response.data!;
-        setPagination({ pageNum, total, pages, pageSize });
-        setProductList(list);
-        setPending(false);
-      } else {
-        setPending(false);
-        message.warning("改变商品状态失败", MESSAGE_DURATION);
-      }
-    },
-    []
-  );
-
-  //商品上下架处理
-  const updateProductStatus = useCallback(
-    (productId: string, status: number, index: number) => async () => {
-      let newLodings = [...lodings];
-      newLodings[index] = true;
-      setLodings(newLodings);
-      const res = await reqUpdateProductStatus(productId, status);
-      if (res.status === RESPONSE_STATUS.SUCCESS) {
-        setProductList((preState) =>
-          preState.map((product) => {
-            if (product._id === productId) {
-              product.status = status;
-            }
-            return product;
-          })
-        );
-        newLodings = [...newLodings];
-        newLodings[index] = false;
-        setLodings(newLodings);
-      } else {
-        newLodings = [...newLodings];
-        newLodings[index] = false;
-        setLodings(newLodings);
-        throw new Error(res.msg);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    load().catch((err: Error) =>
-      message.warning(err.message, MESSAGE_DURATION)
-    );
-  }, [load]);
-
-  return {
-    productList,
-    isPending,
-    lodings,
-    pagination,
-    load,
-    updateProductStatus,
-  };
-}
 
 export default function ProductComponent() {
   const {
@@ -95,18 +14,14 @@ export default function ProductComponent() {
     isPending,
     lodings,
     pagination,
-    load,
+    onPageChange,
     updateProductStatus,
+    searchType,
+    onSearchTypeChange,
+    keyword,
+    onKeywordChange,
+    search,
   } = useProductList();
-
-  const onPageChange = useCallback(
-    (page, pageSize) => {
-      load(page, pageSize).catch((err: Error) =>
-        message.warning(err.message, MESSAGE_DURATION)
-      );
-    },
-    [load]
-  );
 
   const columns: ColumnsType<Product> = [
     { key: "name", dataIndex: "name", title: "商品名称", width: "20%" },
@@ -176,19 +91,27 @@ export default function ProductComponent() {
       align: "center",
     },
   ];
+
   return (
     <Card
       title={
         <div>
-          <Select defaultValue="name" style={{ width: 120 }}>
-            <Option value="name">按名称搜索</Option>
-            <Option value="desc">按描述搜索</Option>
+          <Select
+            value={searchType}
+            style={{ width: 120 }}
+            onChange={onSearchTypeChange}
+          >
+            <Option value="productName">按名称搜索</Option>
+            <Option value="productDesc">按描述搜索</Option>
           </Select>
           <Search
             placeholder="输入关键字"
             allowClear
             enterButton="Search"
             style={{ width: 240 }}
+            onChange={onKeywordChange}
+            value={keyword}
+            onSearch={search}
           />
         </div>
       }

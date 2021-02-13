@@ -53,3 +53,14 @@ export async function reqUpdateProductStatus(
     status,
   });
 }
+
+export async function reqSearchProducts(
+  pageNum: number,
+  pageSize: number,
+  searchType: string,
+  keyword: string
+): Promise<Response<ProductsPerPage>> {
+  return myAxios.get("/manage/product/search", {
+    params: { pageNum, pageSize, [searchType]: keyword },
+  });
+}
