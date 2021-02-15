@@ -8,11 +8,11 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
 import { reqLogin } from "../../api/requests";
 import { addUserInfo } from "../../redux/actions/login";
-import { UserInfo } from "../../redux/typings/login";
 
 import logo from "../../static/imgs/logo.png";
 import "./css/index.less";
 import { RootState } from "../../redux/reducers";
+import { UserInfo } from "../../model/userInfo";
 
 const { Header, Content } = Layout;
 

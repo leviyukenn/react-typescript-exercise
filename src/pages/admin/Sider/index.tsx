@@ -15,13 +15,13 @@ export default function CustomSider() {
       location.pathname.split("/").filter((path) => path && path !== "admin"),
     [location]
   );
-  const selectedKey = useMemo(() => openKeys.slice(-1), [openKeys]);
+  //   const selectedKey = useMemo(() => openKeys.slice(-1), [openKeys]);
 
   return (
     <Sider width={200} className="site-layout-background">
       <Menu
         mode="inline"
-        selectedKeys={selectedKey}
+        selectedKeys={openKeys}
         defaultOpenKeys={openKeys}
         style={{ height: "100%", borderRight: 0 }}
       >
@@ -33,7 +33,8 @@ export default function CustomSider() {
 
 function createMenuList(menuList: RouteItem[]) {
   return menuList.map((item) => {
-    if (!item.children) {
+    if (!item.inNavMenu) return null;
+    if (!item.children || item.notListChildren) {
       return (
         <Menu.Item key={item.key} icon={item.icon}>
           <Link to={item.path}>{item.title}</Link>

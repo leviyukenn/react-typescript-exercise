@@ -1,5 +1,6 @@
 //处理关于userInfo状态的reducer
-import { ACTION_TYPES, Action, LoginState, UserInfo } from "../typings/login";
+import { UserInfo } from "../../model/userInfo";
+import { ACTION_TYPES, Action, LoginState } from "../typings";
 
 let cachedLoginState = JSON.parse(
   localStorage.getItem("loginState") || "false"
@@ -15,14 +16,14 @@ const initState: LoginState = cachedLoginState || emptyLoginState;
 
 export default function loginStateReducer(
   preState: LoginState = initState,
-  action: Action
+  action: Action<UserInfo | undefined>
 ): LoginState {
   const { type, data: userInfo } = action;
   switch (type) {
     case ACTION_TYPES.SAVE_USERINFO:
       const newLoginState = {
         ...preState,
-        userInfo: userInfo as UserInfo,
+        userInfo: userInfo!,
         isLogin: true,
       };
       //缓存登录信息到localStorage

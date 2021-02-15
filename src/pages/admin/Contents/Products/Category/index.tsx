@@ -11,7 +11,8 @@ import {
 } from "../../../../../api/requests";
 
 import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
-import { Category, RESPONSE_STATUS } from "../../../../../api/types";
+import { RESPONSE_STATUS } from "../../../../../api/types";
+import { Category } from "../../../../../model/category";
 
 enum OPERATION_TYPE {
   ADD = "添加分类",
@@ -115,7 +116,7 @@ export default function CategoryComponent() {
     form.resetFields();
     setOperationType(OPERATION_TYPE.ADD);
     setIsModalVisible(true);
-  }, []);
+  }, [form]);
 
   const handleOk = async () => {
     //验证表单

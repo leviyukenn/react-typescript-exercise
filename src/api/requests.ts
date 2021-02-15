@@ -1,6 +1,9 @@
 import { PAGE_SIZE } from "../config/config";
 import myAxios from "./myAxios";
-import { Category, ProductsPerPage, Response } from "./types";
+import { Response } from "./types";
+import { Product } from "../model/product";
+import { Category } from "../model/category";
+import { Pagination } from "../model/pagination";
 
 export async function reqLogin(username: string, password: string) {
   return myAxios.post("/login", {
@@ -38,7 +41,7 @@ export async function reqUpdateCategory(
 export async function reqProductsPerPage(
   pageNum: number,
   pageSize: number = PAGE_SIZE
-): Promise<Response<ProductsPerPage>> {
+): Promise<Response<Pagination<Product>>> {
   return myAxios.get("/manage/product/list", {
     params: { pageNum, pageSize },
   });
@@ -59,7 +62,7 @@ export async function reqSearchProducts(
   pageSize: number,
   searchType: string,
   keyword: string
-): Promise<Response<ProductsPerPage>> {
+): Promise<Response<Pagination<Product>>> {
   return myAxios.get("/manage/product/search", {
     params: { pageNum, pageSize, [searchType]: keyword },
   });

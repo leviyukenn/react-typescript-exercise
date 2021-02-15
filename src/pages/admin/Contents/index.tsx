@@ -16,8 +16,12 @@ function useBreadCrumbs(): RouteItem[] {
     let childrens = routeList;
     const breadCrumbList: RouteItem[] = [];
     pathKeys.forEach((key) => {
+      if (childrens.length === 0) return;
       const menuItem = childrens.find((item) => item.key === key);
-      if (!menuItem) throw new Error("no such menu item.");
+      if (!menuItem) {
+        childrens = [];
+        return;
+      }
       breadCrumbList.push(menuItem);
       childrens = menuItem.children || [];
     });

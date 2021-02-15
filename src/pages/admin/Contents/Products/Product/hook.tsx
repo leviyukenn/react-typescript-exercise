@@ -2,19 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 
 import { message } from "antd";
 
-import {
-  Product,
-  RESPONSE_STATUS,
-  Pagination,
-  ProductsPerPage,
-  Response,
-} from "../../../../../api/types";
+import { RESPONSE_STATUS, Response } from "../../../../../api/types";
+
 import {
   reqProductsPerPage,
   reqSearchProducts,
   reqUpdateProductStatus,
 } from "../../../../../api/requests";
 import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
+import { Product } from "../../../../../model/product";
+import { Pagination } from "../../../../../model/pagination";
 
 export function useProductList() {
   const [productList, setProductList] = useState<Product[]>([]);
@@ -22,7 +19,7 @@ export function useProductList() {
   const [lodings, setLodings] = useState<boolean[]>(
     new Array(productList.length).fill(false, 0)
   );
-  const [pagination, setPagination] = useState<Pagination>({
+  const [pagination, setPagination] = useState<Pagination<undefined>>({
     pageNum: 1,
     total: 1,
     pages: 1,
@@ -36,7 +33,7 @@ export function useProductList() {
   const loadProductList = useCallback(
     async (pageNum: number = 1, pageSize: number = PAGE_SIZE) => {
       setPending(true);
-      let response: Response<ProductsPerPage>;
+      let response: Response<Pagination<Product>>;
       if (isSearching) {
         response = await reqSearchProducts(
           pageNum,
@@ -50,7 +47,8 @@ export function useProductList() {
       if (response.status === RESPONSE_STATUS.SUCCESS) {
         const { pageNum, total, pages, pageSize, list } = response.data!;
         setPagination({ pageNum, total, pages, pageSize });
-        setProductList(list);
+        setProductList(list!);
+
         setPending(false);
       } else {
         setPending(false);

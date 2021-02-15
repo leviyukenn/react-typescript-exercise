@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { Card, Table, Input, Button, Select } from "antd";
 import { ColumnsType } from "antd/es/table";
-import { Product } from "../../../../../api/types";
 
 import { useProductList } from "./hook";
+
+import { Product } from "../../../../../model/product";
+import { useDispatch } from "react-redux";
+import { saveProducts } from "../../../../../redux/actions/products";
 const { Option } = Select;
 const { Search } = Input;
 
@@ -22,6 +25,12 @@ export default function ProductComponent() {
     onKeywordChange,
     search,
   } = useProductList();
+
+  //调用react-redux的Hook
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(saveProducts(productList));
+  }, [productList]);
 
   const columns: ColumnsType<Product> = [
     { key: "name", dataIndex: "name", title: "商品名称", width: "20%" },
