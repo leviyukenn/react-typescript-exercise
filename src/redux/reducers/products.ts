@@ -1,8 +1,19 @@
 import { Product } from "../../model/product";
 import { Action, ACTION_TYPES, ProductsState } from "../typings";
 
-export default function loginStateReducer(
-  preState: ProductsState = { list: [] },
+let cachedProductsState = JSON.parse(
+  localStorage.getItem("productsState") || "false"
+);
+
+const emptyProductsState: ProductsState = {
+  list: [],
+};
+
+//初始化LoginState，如果loaclStorage中缓存了LoginState则使用缓存值
+const initState: ProductsState = cachedProductsState || emptyProductsState;
+
+export default function productsStateReducer(
+  preState: ProductsState = initState,
   action: Action<Product[]>
 ): ProductsState {
   const { type, data: productList } = action;
@@ -12,6 +23,8 @@ export default function loginStateReducer(
         ...preState,
         list: productList,
       };
+
+      localStorage.setItem("productsState", JSON.stringify(newProductsState));
       return newProductsState;
 
     default:

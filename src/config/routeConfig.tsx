@@ -72,7 +72,7 @@ export const routeList: RouteItem[] = [
           {
             title: "修改商品信息",
             key: "updateProduct",
-            path: "/admin/products/product/updateProduct",
+            path: "/admin/products/product/updateProduct/:productId",
             component: <AddUpdateProduct />,
             children: null,
             inNavMenu: false,
@@ -80,7 +80,7 @@ export const routeList: RouteItem[] = [
           {
             title: "商品详细",
             key: "productDetail",
-            path: "/admin/products/product/productDetail",
+            path: "/admin/products/product/productDetail/:productId",
             component: <ProductDetail />,
             children: null,
             inNavMenu: false,

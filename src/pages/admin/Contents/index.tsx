@@ -34,11 +34,19 @@ function useBreadCrumbs(): RouteItem[] {
 
 export default function Contents() {
   const breadCrumbs = useBreadCrumbs();
+  const location = useLocation();
 
   return (
     <Layout className="content-container">
       <Breadcrumb className="breadcrumb" style={{ margin: "16px 0" }}>
-        {breadCrumbs.map((item) => {
+        {breadCrumbs.map((item, index) => {
+          if (index === breadCrumbs.length - 1) {
+            return (
+              <Breadcrumb.Item key={item.key}>
+                <Link to={location.pathname}>{item.title}</Link>
+              </Breadcrumb.Item>
+            );
+          }
           return (
             <Breadcrumb.Item key={item.key}>
               <Link to={item.path}>{item.title}</Link>

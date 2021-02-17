@@ -8,6 +8,7 @@ import { useProductList } from "./hook";
 import { Product } from "../../../../../model/product";
 import { useDispatch } from "react-redux";
 import { saveProducts } from "../../../../../redux/actions/products";
+import { Link, useLocation, useParams, useRouteMatch } from "react-router-dom";
 const { Option } = Select;
 const { Search } = Input;
 
@@ -87,12 +88,16 @@ export default function ProductComponent() {
       key: "operation",
       title: "操作",
       dataIndex: "_id",
-      render: () => {
+      render: (_id: string) => {
         return (
           <div>
-            <Button type="link">修改</Button>
+            <Link to={`/admin/products/product/updateProduct/${_id}`}>
+              修改
+            </Link>
             <br />
-            <Button type="link">详情</Button>
+            <Link to={`/admin/products/product/productDetail/${_id}`}>
+              详情
+            </Link>
           </div>
         );
       },

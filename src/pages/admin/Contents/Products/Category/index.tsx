@@ -4,15 +4,13 @@ import { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useState } from "react";
 
 import { PlusCircleOutlined } from "@ant-design/icons";
-import {
-  reqAddCategory,
-  reqCategoryList,
-  reqUpdateCategory,
-} from "../../../../../api/requests";
 
 import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
-import { RESPONSE_STATUS } from "../../../../../api/types";
+
 import { Category } from "../../../../../model/category";
+import { useDispatch } from "react-redux";
+import { saveCategoryList } from "../../../../../redux/actions/category";
+import { useCategoryList } from "./hook";
 
 enum OPERATION_TYPE {
   ADD = "添加分类",
@@ -21,75 +19,11 @@ enum OPERATION_TYPE {
 
 // type mapResponseToState = (preState:)
 
-function useCategoryList() {
-  const [categoryList, setCategoryList] = useState<Category[]>([]);
-  const [isPending, setPending] = useState(false);
-
-  //加载分类列表
-  const load = useCallback(async () => {
-    setPending(true);
-    const response = await reqCategoryList();
-    if (response.status === RESPONSE_STATUS.SUCCESS) {
-      setCategoryList(response.data!.reverse());
-      setPending(false);
-    } else {
-      setPending(false);
-      throw new Error(response.msg);
-    }
-  }, []);
-
-  //添加分类
-  const addCategory = useCallback(
-    async (categoryName: string, parentId: string = "0") => {
-      setPending(true);
-      const res = await reqAddCategory(categoryName, parentId);
-      if (res.status === RESPONSE_STATUS.SUCCESS) {
-        setCategoryList((preState) => [res.data!, ...preState]);
-        setPending(false);
-      } else {
-        setPending(false);
-        throw new Error(res.msg);
-      }
-    },
-    []
-  );
-
-  //修改分类
-  const updateCategory = useCallback(
-    async (categoryId: string, categoryName: string) => {
-      setPending(true);
-      const res = await reqUpdateCategory(categoryId, categoryName);
-      if (res.status === RESPONSE_STATUS.SUCCESS) {
-        setCategoryList((preState) =>
-          preState.map((category) => {
-            if (category._id === categoryId) {
-              category.name = categoryName;
-            }
-            return category;
-          })
-        );
-        setPending(false);
-      } else {
-        setPending(false);
-        throw new Error(res.msg);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    load().catch((err: Error) =>
-      message.warning(err.message, MESSAGE_DURATION)
-    );
-  }, [load]);
-
-  return { categoryList, isPending, addCategory, updateCategory };
-}
-
 export default function CategoryComponent() {
   const {
     categoryList,
     isPending,
+    loadCategoryList,
     addCategory,
     updateCategory,
   } = useCategoryList();
@@ -99,6 +33,19 @@ export default function CategoryComponent() {
     OPERATION_TYPE.ADD
   );
   const [form] = Form.useForm();
+
+  //初次加载CategoryList
+  useEffect(() => {
+    loadCategoryList().catch((err: Error) =>
+      message.warning(err.message, MESSAGE_DURATION)
+    );
+  }, []);
+
+  //将categoryList同步到redux
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(saveCategoryList(categoryList));
+  }, [categoryList]);
 
   const showUpdateCategoryModal = useCallback(
     (key: string, categoryName: string) => {
