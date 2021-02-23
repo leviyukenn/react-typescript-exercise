@@ -1,6 +1,6 @@
 import { PAGE_SIZE } from "../config/config";
 import myAxios from "./myAxios";
-import { Response } from "./types";
+import { AddProductParams, Response } from "./types";
 import { Product } from "../model/product";
 import { Category } from "../model/category";
 import { Pagination } from "../model/pagination";
@@ -66,4 +66,16 @@ export async function reqSearchProducts(
   return myAxios.get("/manage/product/search", {
     params: { pageNum, pageSize, [searchType]: keyword },
   });
+}
+
+export async function reqDeleteImage(name: string): Promise<Response<{}>> {
+  return myAxios.post("/manage/img/delete", {
+    name,
+  });
+}
+
+export async function reqAddProduct(
+  params: AddProductParams
+): Promise<Response<{}>> {
+  return myAxios.post("/manage/product/add", params);
 }

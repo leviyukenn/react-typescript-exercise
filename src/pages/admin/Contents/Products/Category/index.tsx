@@ -10,8 +10,8 @@ import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
 import { Category } from "../../../../../model/category";
 import { useDispatch } from "react-redux";
 import { saveCategoryList } from "../../../../../redux/actions/category";
-import { useCategoryList } from "./hook";
 
+import { useCategoryList } from "./hook";
 enum OPERATION_TYPE {
   ADD = "添加分类",
   UPDATE = "修改分类",

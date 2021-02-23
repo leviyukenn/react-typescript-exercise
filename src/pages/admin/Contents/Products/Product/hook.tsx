@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 import { message } from "antd";
 
@@ -12,6 +12,11 @@ import {
 import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
 import { Product } from "../../../../../model/product";
 import { Pagination } from "../../../../../model/pagination";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../../../redux/reducers";
+import { useCategoryList } from "../Category/hook";
+import { saveCategoryList } from "../../../../../redux/actions/category";
+import { useHistory, useParams } from "react-router-dom";
 
 export function useProductList() {
   const [productList, setProductList] = useState<Product[]>([]);
@@ -131,4 +136,49 @@ export function useProductList() {
     onKeywordChange,
     search,
   };
+}
+
+//读取商品类名
+//redux中有则从redux中取
+//redux中没有则发送网络请求拉取
+export function useCategoryState() {
+  const categoryState = useSelector((state: RootState) => state.categoryState);
+  const dispatch = useDispatch();
+  const { categoryList, isPending, loadCategoryList } = useCategoryList();
+
+  useEffect(() => {
+    if (categoryState.list.length === 0) {
+      if (categoryList.length === 0) {
+        loadCategoryList().catch((err: Error) =>
+          message.warning(err.message, MESSAGE_DURATION)
+        );
+      } else {
+        dispatch(saveCategoryList(categoryList));
+      }
+    }
+  }, [categoryState, categoryList]);
+  return { categoryState, isPending };
+}
+
+//回退按钮
+export function useGoBack() {
+  const history = useHistory();
+  const goBack = useCallback(() => {
+    history.goBack();
+  }, [history]);
+  return goBack;
+}
+
+//获取params中指定了商品id的商品信息
+
+export function useProduct() {
+  const { productId } = useParams<{ productId: string }>();
+  const productList = useSelector(
+    (state: RootState) => state.productsState.list
+  );
+  const product = useMemo(
+    () => productList.find((product) => product._id === productId),
+    [productList]
+  );
+  return product;
 }

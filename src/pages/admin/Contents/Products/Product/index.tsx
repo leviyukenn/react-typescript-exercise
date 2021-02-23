@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { Card, Table, Input, Button, Select } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -8,7 +8,7 @@ import { useProductList } from "./hook";
 import { Product } from "../../../../../model/product";
 import { useDispatch } from "react-redux";
 import { saveProducts } from "../../../../../redux/actions/products";
-import { Link, useLocation, useParams, useRouteMatch } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 const { Option } = Select;
 const { Search } = Input;
 
@@ -32,6 +32,11 @@ export default function ProductComponent() {
   useEffect(() => {
     dispatch(saveProducts(productList));
   }, [productList]);
+
+  const history = useHistory();
+  const toAddProduct = useCallback(() => {
+    history.push("/admin/products/product/addProduct");
+  }, [history]);
 
   const columns: ColumnsType<Product> = [
     { key: "name", dataIndex: "name", title: "商品名称", width: "20%" },
@@ -130,7 +135,12 @@ export default function ProductComponent() {
         </div>
       }
       extra={
-        <Button type="primary" icon={<PlusCircleOutlined />} size="large">
+        <Button
+          type="primary"
+          icon={<PlusCircleOutlined />}
+          size="large"
+          onClick={toAddProduct}
+        >
           添加商品
         </Button>
       }

@@ -1,42 +1,13 @@
-import { Button, Card, List, message, Typography } from "antd";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, List, Typography } from "antd";
+import React from "react";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useHistory, useParams } from "react-router-dom";
-import { RootState } from "../../../../../../redux/reducers";
-import { useDispatch, useSelector } from "react-redux";
-import { useCategoryList } from "../../Category/hook";
-import { MESSAGE_DURATION } from "../../../../../../config/config";
-import { saveCategoryList } from "../../../../../../redux/actions/category";
+import { useCategoryState, useGoBack, useProduct } from "../../Product/hook";
+import { BASE_URL } from "../../../../../../config/config";
 
 export default function ProductDetail() {
-  const { productId } = useParams<{ productId: string }>();
-  const history = useHistory();
-  const productList = useSelector(
-    (state: RootState) => state.productsState.list
-  );
-  const product = useMemo(
-    () => productList.find((product) => product._id === productId),
-    [productList]
-  );
-
-  //回退按钮
-  const goBack = useCallback(() => {
-    history.goBack();
-  }, [history]);
-
-  //读取商品类名
-  //redux中有则从redux中取
-  const categoryState = useSelector((state: RootState) => state.categoryState);
-  const dispatch = useDispatch();
-  const { categoryList, isPending, loadCategoryList } = useCategoryList();
-
-  useEffect(() => {
-    if (categoryState.list.length === 0) {
-      loadCategoryList()
-        .then(() => dispatch(saveCategoryList(categoryList)))
-        .catch((err: Error) => message.warning(err.message, MESSAGE_DURATION));
-    }
-  }, [categoryState, categoryList]);
+  const goBack = useGoBack();
+  const { categoryState, isPending } = useCategoryState();
+  const product = useProduct();
 
   return (
     <List
@@ -54,6 +25,7 @@ export default function ProductDetail() {
         </div>
       }
       bordered
+      loading={isPending}
     >
       <List.Item>
         <Typography.Text strong>商品名称:</Typography.Text> {product?.name}
@@ -75,10 +47,11 @@ export default function ProductDetail() {
       </List.Item>
       <List.Item>
         <Typography.Text strong>商品图片:</Typography.Text>
-        {/* {product?.imgs.map((img) => {
-          return <img src={"/upload" + img} alt="商品图片" />;
-        })} */}
-        imgs
+        {product?.imgs.map((img) => {
+          return (
+            <img key={img} src={`${BASE_URL}/upload/${img}`} alt="商品图片" />
+          );
+        })}
       </List.Item>
       <List.Item
         style={{ display: "flex", flexFlow: "column", alignItems: "start" }}
