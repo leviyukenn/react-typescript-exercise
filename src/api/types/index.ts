@@ -20,6 +20,10 @@ export interface AddProductParams {
   imgs?: string[];
 }
 
+export interface UpdateProductParams extends AddProductParams {
+  _id: string;
+}
+
 // |categoryId    |Y       |string   |分类ID
 // |pCategoryId   |Y       |string   |父分类ID
 // |name          |Y       |string   |商品名称

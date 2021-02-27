@@ -19,48 +19,52 @@ import { saveCategoryList } from "../../../../../redux/actions/category";
 import { useHistory, useParams } from "react-router-dom";
 
 export function useProductList() {
-  const [productList, setProductList] = useState<Product[]>([]);
-  const [isPending, setPending] = useState(false);
-  const [lodings, setLodings] = useState<boolean[]>(
-    new Array(productList.length).fill(false, 0)
-  );
-  const [pagination, setPagination] = useState<Pagination<undefined>>({
+  const [productList, setProductList] = useState<Pagination<Product>>({
     pageNum: 1,
     total: 1,
     pages: 1,
     pageSize: PAGE_SIZE,
+    list: [],
   });
-  const [searchType, setSearchType] = useState<string>("productName");
-  const [keyword, setKeyword] = useState<string>("");
-  const [isSearching, setIsSearching] = useState<boolean>(false);
+
+  const [isPending, setPending] = useState(false);
+
+  //加载商品上架/下架状态时的loding状态
+  const [lodings, setLodings] = useState<boolean[]>(
+    new Array(productList.list.length).fill(false, 0)
+  );
 
   //加载商品列表
   const loadProductList = useCallback(
-    async (pageNum: number = 1, pageSize: number = PAGE_SIZE) => {
+    async (
+      pageNum: number,
+      pageSize: number,
+      isSearching: boolean,
+      searchType?: string,
+      keyword?: string
+    ) => {
       setPending(true);
       let response: Response<Pagination<Product>>;
       if (isSearching) {
+        console.log(searchType, keyword);
         response = await reqSearchProducts(
           pageNum,
           pageSize,
-          searchType,
-          keyword
+          searchType!,
+          keyword!
         );
       } else {
         response = await reqProductsPerPage(pageNum, pageSize);
       }
       if (response.status === RESPONSE_STATUS.SUCCESS) {
-        const { pageNum, total, pages, pageSize, list } = response.data!;
-        setPagination({ pageNum, total, pages, pageSize });
-        setProductList(list!);
-
+        setProductList(response.data!);
         setPending(false);
       } else {
         setPending(false);
-        message.warning("改变商品状态失败", MESSAGE_DURATION);
+        message.warning("获取商品列表失败", MESSAGE_DURATION);
       }
     },
-    [isSearching, keyword, searchType]
+    []
   );
 
   //商品上下架处理
@@ -71,14 +75,15 @@ export function useProductList() {
       setLodings(newLodings);
       const res = await reqUpdateProductStatus(productId, status);
       if (res.status === RESPONSE_STATUS.SUCCESS) {
-        setProductList((preState) =>
-          preState.map((product) => {
+        setProductList((preState) => ({
+          ...preState,
+          list: preState.list.map((product) => {
             if (product._id === productId) {
               product.status = status;
             }
             return product;
-          })
-        );
+          }),
+        }));
         newLodings = [...newLodings];
         newLodings[index] = false;
         setLodings(newLodings);
@@ -92,49 +97,43 @@ export function useProductList() {
     [lodings]
   );
 
-  //将搜索栏维护为受控组件
-  const onSearchTypeChange = useCallback((value) => {
-    setSearchType(value);
-  }, []);
-  const onKeywordChange = useCallback((event) => {
-    setKeyword(event.target.value);
-  }, []);
-
-  //search按钮回调
-  const search = useCallback(() => {
-    setIsSearching(true);
-
-    loadProductList();
-  }, [loadProductList]);
-
-  //切换页时的回调
-  const onPageChange = useCallback(
-    (pageNum: number, pageSize: number = PAGE_SIZE) => {
-      loadProductList(pageNum, pageSize).catch((err: Error) =>
-        message.warning(err.message, MESSAGE_DURATION)
-      );
-    },
-    [loadProductList]
-  );
-
-  useEffect(() => {
-    loadProductList().catch((err: Error) =>
-      message.warning(err.message, MESSAGE_DURATION)
-    );
-  }, []);
-
   return {
     productList,
     isPending,
     lodings,
-    pagination,
-    onPageChange,
+    loadProductList,
     updateProductStatus,
+  };
+}
+
+export function useSearch(defaultSearchType: string) {
+  const [searchType, setSearchType] = useState<string>(defaultSearchType);
+  const [keyword, setKeyword] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+
+  //将搜索栏维护为受控组件
+  const onSearchTypeChange = useCallback(
+    (value) => {
+      setSearchType(value);
+    },
+    [setSearchType]
+  );
+  const onKeywordChange = useCallback(
+    (event) => {
+      setKeyword(event.target.value);
+    },
+    [setKeyword]
+  );
+
+  return {
     searchType,
+    setSearchType,
     onSearchTypeChange,
     keyword,
+    setKeyword,
     onKeywordChange,
-    search,
+    isSearching,
+    setIsSearching,
   };
 }
 
@@ -173,12 +172,13 @@ export function useGoBack() {
 
 export function useProduct() {
   const { productId } = useParams<{ productId: string }>();
-  const productList = useSelector(
-    (state: RootState) => state.productsState.list
+
+  const products = useSelector(
+    (state: RootState) => state.productsState.products
   );
   const product = useMemo(
-    () => productList.find((product) => product._id === productId),
-    [productList]
+    () => products.list.find((product) => product._id === productId),
+    [products]
   );
   return product;
 }

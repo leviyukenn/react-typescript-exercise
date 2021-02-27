@@ -1,4 +1,5 @@
 import { Category } from "../../model/category";
+import { Pagination } from "../../model/pagination";
 import { Product } from "../../model/product";
 import { UserInfo } from "../../model/userInfo";
 
@@ -7,6 +8,7 @@ export enum ACTION_TYPES {
   DELETE_USERINFO = "delete_userinfo",
   SAVE_PRODUCTS = "save_products",
   SAVE_CATEGORY_LIST = "save_category_list",
+  GOBACK_PRODUCTS_PAGE = "goback_products_page",
 }
 
 export interface Action<T> {
@@ -20,7 +22,10 @@ export interface LoginState {
 }
 
 export interface ProductsState {
-  list: Product[];
+  products: Pagination<Product>;
+  isSearching: boolean;
+  searchType: string;
+  keyword: string;
 }
 
 export interface CategoryState {

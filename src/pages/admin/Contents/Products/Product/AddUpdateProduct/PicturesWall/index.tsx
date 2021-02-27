@@ -4,16 +4,8 @@ import React, { useCallback, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { BASE_URL } from "../../../../../../../config/config";
 import { reqDeleteImage } from "../../../../../../../api/requests";
-
-interface UploadImgResponse {
-  status: number;
-  data: Image;
-}
-
-interface Image {
-  name: string;
-  url: string;
-}
+import { Response, RESPONSE_STATUS } from "../../../../../../../api/types";
+import { Image } from "../../../../../../../model/image";
 
 function getBase64(file: Blob) {
   return new Promise((resolve, reject) => {
@@ -25,20 +17,25 @@ function getBase64(file: Blob) {
 }
 
 export default function PicturesWall({
-  setImgNames,
+  fileList,
+  setFileList,
 }: {
-  setImgNames: React.Dispatch<React.SetStateAction<string[]>>;
+  fileList: UploadFile<Response<Image>>[];
+  setFileList: React.Dispatch<
+    React.SetStateAction<UploadFile<Response<Image>>[]>
+  >;
 }) {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
-  const [fileList, setFileList] = useState<UploadFile<UploadImgResponse>[]>([]);
 
   const handleCancel = useCallback(() => setPreviewVisible(false), [
     setPreviewVisible,
   ]);
 
-  const handlePreview = async (file: UploadFile<UploadImgResponse>) => {
+  const handlePreview = async (
+    file: UploadFile<UploadFile<Response<Image>>[]>
+  ) => {
     if (!file.url && !file.preview) {
       try {
         file.preview = (await getBase64(file.originFileObj as Blob)) as string;
@@ -55,12 +52,15 @@ export default function PicturesWall({
   };
 
   const handleChange = useCallback(
-    ({ file, fileList }: UploadChangeParam<UploadFile<UploadImgResponse>>) => {
+    ({ file, fileList }: UploadChangeParam<UploadFile<Response<Image>>>) => {
       //当完成上传图片时，将response中的url注入fileList中
-      if (file.status === "done") {
+      if (
+        file.status === "done" &&
+        file.response?.status === RESPONSE_STATUS.SUCCESS
+      ) {
         const f = fileList.find((item) => item.uid === file.uid)!;
-        f.url = file.response!.data.url;
-        f.name = file.response!.data.name;
+        f.url = file.response!.data!.url;
+        f.name = file.response!.data!.name;
       } else if (file.status === "error") {
         message.warning("图片上传失败");
       } else if (file.status === "removed") {
@@ -70,7 +70,7 @@ export default function PicturesWall({
           }
         });
       }
-      setImgNames(fileList.map((img) => img.name));
+      console.log(fileList);
       setFileList([...fileList]);
     },
     [setFileList]

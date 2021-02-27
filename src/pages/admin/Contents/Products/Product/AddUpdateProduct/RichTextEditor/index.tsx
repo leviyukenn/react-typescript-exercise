@@ -1,21 +1,18 @@
 import React, { useCallback, useState } from "react";
 import { Editor } from "react-draft-wysiwyg";
 import { EditorState, convertToRaw } from "draft-js";
-import draftToHtml from "draftjs-to-html";
+
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 
 export default function RichTextEditor({
-  setProductDetail,
+  editorState,
+  setEditorState,
 }: {
-  setProductDetail: React.Dispatch<React.SetStateAction<string>>;
+  editorState: EditorState;
+  setEditorState: React.Dispatch<React.SetStateAction<EditorState>>;
 }) {
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
-
   const onEditorStateChange = useCallback(
     (editorState: EditorState) => {
-      setProductDetail(
-        draftToHtml(convertToRaw(editorState.getCurrentContent()))
-      );
       setEditorState(editorState);
     },
     [setEditorState]

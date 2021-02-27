@@ -1,6 +1,6 @@
 import { PAGE_SIZE } from "../config/config";
 import myAxios from "./myAxios";
-import { AddProductParams, Response } from "./types";
+import { AddProductParams, Response, UpdateProductParams } from "./types";
 import { Product } from "../model/product";
 import { Category } from "../model/category";
 import { Pagination } from "../model/pagination";
@@ -78,4 +78,10 @@ export async function reqAddProduct(
   params: AddProductParams
 ): Promise<Response<{}>> {
   return myAxios.post("/manage/product/add", params);
+}
+
+export async function reqUpdateProduct(
+  params: UpdateProductParams
+): Promise<Response<{}>> {
+  return myAxios.post("/manage/product/update", params);
 }

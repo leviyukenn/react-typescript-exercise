@@ -1,12 +1,22 @@
-import { Button, Card, Form, Input, InputNumber, message, Select } from "antd";
-import React, { useCallback, useRef, useState } from "react";
-import { useCategoryState, useGoBack } from "../hook";
+import { Button, Card, Form, Input, message, Select } from "antd";
+import React, { useCallback, useEffect, useState } from "react";
+import { useCategoryState, useGoBack, useProduct } from "../hook";
+import { UploadFile } from "antd/lib/upload/interface";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import PicturesWall from "./PicturesWall";
 import RichTextEditor from "./RichTextEditor";
-import { MESSAGE_DURATION } from "../../../../../../config/config";
-import { reqAddProduct } from "../../../../../../api/requests";
-import { RESPONSE_STATUS } from "../../../../../../api/types";
+import { BASE_URL, MESSAGE_DURATION } from "../../../../../../config/config";
+import {
+  reqAddProduct,
+  reqUpdateCategory,
+  reqUpdateProduct,
+} from "../../../../../../api/requests";
+import { RESPONSE_STATUS, Response } from "../../../../../../api/types";
+import { Image } from "../../../../../../model/image";
+import { EditorState, convertToRaw, ContentState } from "draft-js";
+import { Editor } from "react-draft-wysiwyg";
+import draftToHtml from "draftjs-to-html";
+import htmlToDraft from "html-to-draftjs";
 
 const { Option } = Select;
 
@@ -27,52 +37,99 @@ type FormData = {
 
 export default function AddUpdateProduct() {
   const goBack = useGoBack();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormData>();
   const { categoryState, isPending } = useCategoryState();
-  const [imgNames, setImgNames] = useState<string[]>([]);
-  const [productDetail, setProductDetail] = useState<string>("");
+
+  const [fileList, setFileList] = useState<UploadFile<Response<Image>>[]>([]);
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+
+  const product = useProduct();
+
+  const [isUpdate, setIsUpdate] = useState(false);
+
+  //如果product不为undefined说明进入修改商品界面
+  useEffect(() => {
+    if (product) {
+      setIsUpdate(true);
+      form.setFieldsValue({
+        name: product.name,
+        desc: product.desc,
+        price: product.price + "",
+        categoryId: product.categoryId,
+      });
+      setFileList(
+        product.imgs.map((imgName, index) => ({
+          uid: -index + "",
+          size: 0,
+          name: imgName,
+          url: `${BASE_URL}/upload/${imgName}`,
+          type: "",
+        }))
+      );
+      const contentBlock = htmlToDraft(product.detail);
+      if (contentBlock) {
+        const contentState = ContentState.createFromBlockArray(
+          contentBlock.contentBlocks
+        );
+        const editorState = EditorState.createWithContent(contentState);
+        setEditorState(editorState);
+      }
+    }
+  }, [product, form]);
 
   const handleSubmit = useCallback(async () => {
     //验证表单
     try {
       const value: FormData = await form.validateFields();
 
-      const pCategoryId = categoryState.list.find(
-        (category) => category._id === value.categoryId
-      )!.parentId;
+      const pCategoryId =
+        categoryState.list.find((category) => category._id === value.categoryId)
+          ?.parentId || "0";
 
-      const res = await reqAddProduct({
-        ...value,
-        pCategoryId,
-        detail: productDetail,
-        imgs: imgNames,
-      });
-
-      if (res.status === RESPONSE_STATUS.SUCCESS) {
-        message.success("添加商品成功", MESSAGE_DURATION);
+      let response: Response<{}>;
+      if (!isUpdate) {
+        response = await reqAddProduct({
+          ...value,
+          pCategoryId,
+          detail: draftToHtml(convertToRaw(editorState.getCurrentContent())),
+          imgs: fileList.map((img) => img.name),
+        });
+        if (response.status === RESPONSE_STATUS.SUCCESS) {
+          message.success("添加商品成功", MESSAGE_DURATION);
+        }
+        if (response.status === RESPONSE_STATUS.FAILED)
+          throw new Error("添加商品失败");
+      } else {
+        response = await reqUpdateProduct({
+          ...value,
+          _id: product!._id,
+          pCategoryId,
+          detail: draftToHtml(convertToRaw(editorState.getCurrentContent())),
+          imgs: fileList.map((img) => img.name),
+        });
+        console.log({
+          ...value,
+          _id: product!._id,
+          pCategoryId,
+          detail: draftToHtml(convertToRaw(editorState.getCurrentContent())),
+          imgs: fileList.map((img) => img.name),
+        });
+        if (response.status === RESPONSE_STATUS.SUCCESS) {
+          message.success("修改商品成功", MESSAGE_DURATION);
+        }
+        if (response.status === RESPONSE_STATUS.FAILED)
+          throw new Error("修改商品失败");
       }
-      if (res.status === RESPONSE_STATUS.FAILED)
-        throw new Error("添加商品失败");
-
-      // switch (operationType) {
-      //   case OPERATION_TYPE.ADD:
-      //     await addCategory(value.categoryName);
-      //     message.success("添加分类成功", MESSAGE_DURATION);
-      //     break;
-      //   case OPERATION_TYPE.UPDATE:
-      //     await updateCategory(modalInitialKey, value.categoryName);
-      //     message.success("修改分类成功", MESSAGE_DURATION);
-      //     break;
-      //   default:
-      //     break;
-      // }
 
       //清空表单
       form.resetFields();
+      setEditorState(EditorState.createEmpty());
+      setFileList([]);
+      goBack();
     } catch (err) {
       message.warning(err.message, MESSAGE_DURATION);
     }
-  }, [imgNames, productDetail]);
+  }, [fileList, editorState]);
 
   return (
     <Card
@@ -147,11 +204,11 @@ export default function AddUpdateProduct() {
         </Form.Item>
         <Form.Item
           label="商品图片"
-          name="images"
+          name="imgs"
           labelCol={{ span: 2, offset: 1 }}
           wrapperCol={{ span: 9 }}
         >
-          <PicturesWall setImgNames={setImgNames} />
+          <PicturesWall {...{ fileList, setFileList }} />
         </Form.Item>
         <Form.Item
           label="商品详情"
@@ -159,7 +216,7 @@ export default function AddUpdateProduct() {
           labelCol={{ span: 2, offset: 1 }}
           wrapperCol={{ span: 15 }}
         >
-          <RichTextEditor setProductDetail={setProductDetail} />
+          <RichTextEditor {...{ editorState, setEditorState }} />
         </Form.Item>
         <Form.Item wrapperCol={{ offset: 3 }}>
           <Button type="primary" htmlType="button" onClick={handleSubmit}>

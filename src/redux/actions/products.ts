@@ -1,7 +1,8 @@
-import { Product } from "../../model/product";
-import { ACTION_TYPES, Action } from "../typings";
+import { ACTION_TYPES, Action, ProductsState } from "../typings";
 
-export const saveProducts = (products: Product[]): Action<Product[]> => ({
+export const saveProductsState = (
+  productsState: ProductsState
+): Action<ProductsState> => ({
   type: ACTION_TYPES.SAVE_PRODUCTS,
-  data: products,
+  data: productsState,
 });

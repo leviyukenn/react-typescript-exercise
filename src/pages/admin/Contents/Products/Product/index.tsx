@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect } from "react";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Card, Table, Input, Button, Select } from "antd";
+import { Card, Table, Input, Button, Select, message } from "antd";
 import { ColumnsType } from "antd/es/table";
 
-import { useProductList } from "./hook";
+import { useProductList, useSearch } from "./hook";
 
 import { Product } from "../../../../../model/product";
-import { useDispatch } from "react-redux";
-import { saveProducts } from "../../../../../redux/actions/products";
+import { useDispatch, useSelector } from "react-redux";
+import { saveProductsState } from "../../../../../redux/actions/products";
 import { Link, useHistory } from "react-router-dom";
+import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
+import { RootState } from "../../../../../redux/reducers";
 const { Option } = Select;
 const { Search } = Input;
 
@@ -17,21 +19,70 @@ export default function ProductComponent() {
     productList,
     isPending,
     lodings,
-    pagination,
-    onPageChange,
+    loadProductList,
     updateProductStatus,
+  } = useProductList();
+  const {
     searchType,
+    setSearchType,
     onSearchTypeChange,
     keyword,
+    setKeyword,
     onKeywordChange,
-    search,
-  } = useProductList();
+    isSearching,
+    setIsSearching,
+  } = useSearch("productName");
+  const productsState = useSelector((state: RootState) => state.productsState);
+  const dispatch = useDispatch();
+
+  //切换页时的回调
+  const onPageChange = useCallback(
+    (pageNum: number, pageSize: number = PAGE_SIZE) => {
+      loadProductList(pageNum, pageSize, isSearching, searchType, keyword);
+    },
+    [loadProductList, isSearching, searchType, keyword]
+  );
+
+  //初次进入页面时初始化商品列表
+  useEffect(() => {
+    if (productsState.products.list.length !== 0) {
+      setIsSearching(productsState.isSearching);
+      setSearchType(productsState.searchType);
+      setKeyword(productsState.keyword);
+
+      loadProductList(
+        productsState.products.pageNum,
+        productsState.products.pageSize,
+        productsState.isSearching,
+        productsState.searchType,
+        productsState.keyword
+      );
+    } else {
+      loadProductList(1, PAGE_SIZE, isSearching);
+    }
+  }, []);
+
+  //search按钮回调
+  const search = useCallback(
+    (value) => {
+      setIsSearching(true);
+
+      loadProductList(1, PAGE_SIZE, true, searchType, value);
+    },
+    [searchType, keyword]
+  );
 
   //调用react-redux的Hook
-  const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(saveProducts(productList));
-  }, [productList]);
+    dispatch(
+      saveProductsState({
+        products: productList,
+        isSearching,
+        searchType,
+        keyword,
+      })
+    );
+  }, [productList, isSearching, searchType, keyword]);
 
   const history = useHistory();
   const toAddProduct = useCallback(() => {
@@ -148,12 +199,12 @@ export default function ProductComponent() {
     >
       <Table<Product>
         columns={columns}
-        dataSource={productList}
+        dataSource={productList.list}
         bordered
         pagination={{
-          pageSize: pagination.pageSize,
-          current: pagination.pageNum,
-          total: pagination.total,
+          pageSize: productList.pageSize,
+          current: productList.pageNum,
+          total: productList.total,
           showQuickJumper: true,
           showSizeChanger: false,
           onChange: onPageChange,
