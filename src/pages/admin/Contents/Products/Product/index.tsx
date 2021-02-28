@@ -9,7 +9,7 @@ import { Product } from "../../../../../model/product";
 import { useDispatch, useSelector } from "react-redux";
 import { saveProductsState } from "../../../../../redux/actions/products";
 import { Link, useHistory } from "react-router-dom";
-import { MESSAGE_DURATION, PAGE_SIZE } from "../../../../../config/config";
+import { PAGE_SIZE } from "../../../../../config/config";
 import { RootState } from "../../../../../redux/reducers";
 const { Option } = Select;
 const { Search } = Input;

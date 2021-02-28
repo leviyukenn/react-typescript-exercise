@@ -4,6 +4,7 @@ import { AddProductParams, Response, UpdateProductParams } from "./types";
 import { Product } from "../model/product";
 import { Category } from "../model/category";
 import { Pagination } from "../model/pagination";
+import { Role } from "../model/role";
 
 export async function reqLogin(username: string, password: string) {
   return myAxios.post("/login", {
@@ -84,4 +85,30 @@ export async function reqUpdateProduct(
   params: UpdateProductParams
 ): Promise<Response<{}>> {
   return myAxios.post("/manage/product/update", params);
+}
+
+export async function reqAddRole(roleName: string): Promise<Response<Role>> {
+  return myAxios.post("/manage/role/add", { roleName });
+}
+
+export async function reqGetRoleList(): Promise<Response<Role[]>> {
+  return myAxios.get("/manage/role/list");
+}
+
+// |_id          |Y       |string   |角色ID
+// |menus        |Y       |array    |权限key数组
+// |auth_time    |Y       |number   |权限时间
+// |auth_name    |Y       |string   |权限人姓名
+export async function reqUpdateRole(
+  _id: string,
+  menus: string[],
+  auth_time: number,
+  auth_name: string
+): Promise<Response<Role>> {
+  return myAxios.post("/manage/role/update", {
+    _id,
+    menus,
+    auth_time,
+    auth_name,
+  });
 }
