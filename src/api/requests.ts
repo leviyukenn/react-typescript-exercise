@@ -5,6 +5,7 @@ import { Product } from "../model/product";
 import { Category } from "../model/category";
 import { Pagination } from "../model/pagination";
 import { Role } from "../model/role";
+import { User } from "../model/user";
 
 export async function reqLogin(username: string, password: string) {
   return myAxios.post("/login", {
@@ -87,12 +88,12 @@ export async function reqUpdateProduct(
   return myAxios.post("/manage/product/update", params);
 }
 
-export async function reqAddRole(roleName: string): Promise<Response<Role>> {
-  return myAxios.post("/manage/role/add", { roleName });
-}
-
 export async function reqGetRoleList(): Promise<Response<Role[]>> {
   return myAxios.get("/manage/role/list");
+}
+
+export async function reqAddRole(roleName: string): Promise<Response<Role>> {
+  return myAxios.post("/manage/role/add", { roleName });
 }
 
 // |_id          |Y       |string   |角色ID
@@ -111,4 +112,54 @@ export async function reqUpdateRole(
     auth_time,
     auth_name,
   });
+}
+
+export async function reqGetUserList(): Promise<Response<{users:User[],roles:Role[]}>> {
+  return myAxios.get("/manage/user/list");
+}
+
+// |username    |Y       |string   |用户名
+// |password    |Y       |string   |密码
+// |phone       |N       |string   |手机号
+// |email       |N       |string   |邮箱
+// |role_id     |N       |string   |角色ID
+export async function reqAddUser(
+  userName: string,
+  password: string,
+  phone: string,
+  email: string,
+  role_id: string
+): Promise<Response<User>> {
+  return myAxios.post("/manage/user/add", {
+    userName,
+    password,
+    phone,
+    email,
+    role_id,
+  });
+}
+
+// |_id         |Y       |string   |ID
+// |username    |N       |string   |用户名
+// |phone       |N       |string   |手机号
+// |email       |N       |string   |邮箱
+// |role_id     |N       |string   |角色ID
+export async function reqUpdateUser(
+  _id: string,
+  userName: string,
+  phone: string,
+  email: string,
+  role_id: string
+): Promise<Response<User>> {
+  return myAxios.post("/manage/user/update", {
+    _id,
+    userName,
+    phone,
+    email,
+    role_id,
+  });
+}
+
+export async function reqDeleteUser(userId: string): Promise<Response<{}>> {
+  return myAxios.post("/manage/user/delete", { userId });
 }
