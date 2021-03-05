@@ -7,7 +7,6 @@ import { User } from "../../../../model/user";
 import { useUserList } from "./hook";
 
 import { PlusCircleOutlined } from "@ant-design/icons";
-
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
 const { Option } = Select;
@@ -71,11 +70,24 @@ export default function UserComponent() {
     [form, userList]
   );
 
+  const onClickDelete = useCallback(
+    (userId: string) => async () => {
+      try {
+        await deleteUser(userId);
+        message.success("删除用户成功", MESSAGE_DURATION);
+      } catch (err) {
+        message.success("删除用户失败", MESSAGE_DURATION);
+      }
+    },
+    []
+  );
+
   const handleOk = useCallback(async () => {
     //验证表单
 
     try {
       const value = await form.validateFields();
+      console.log(value);
       switch (operationType) {
         case OPERATION_TYPE.ADD_USER:
           await addUser(
@@ -85,7 +97,7 @@ export default function UserComponent() {
             value.email,
             value.role_id
           );
-          message.success("添加分类成功", MESSAGE_DURATION);
+          message.success("添加用户成功", MESSAGE_DURATION);
           break;
         case OPERATION_TYPE.UPDATE_USER:
           await updateUser(
@@ -95,13 +107,13 @@ export default function UserComponent() {
             value.email,
             value.role_id
           );
-          message.success("修改分类成功", MESSAGE_DURATION);
+          message.success("修改用户成功", MESSAGE_DURATION);
           break;
         default:
           break;
       }
     } catch (err) {
-      message.warning(err, MESSAGE_DURATION);
+      message.warning(err.message, MESSAGE_DURATION);
     } finally {
       //清空表单
       form.resetFields();
@@ -142,7 +154,9 @@ export default function UserComponent() {
               修改用户
             </Button>
             <br />
-            <Button type="link">删除用户</Button>
+            <Button type="link" onClick={onClickDelete(userId)}>
+              删除用户
+            </Button>
           </Fragment>
         );
       },
@@ -191,15 +205,19 @@ export default function UserComponent() {
             name="userName"
             // 声明式校验
             rules={[{ required: true, message: "请输入用户名" }]}
+            labelCol={{ span: 4, offset: 1 }}
+            wrapperCol={{ span: 12, offset: 1 }}
           >
             <Input placeholder="用户名" />
           </Form.Item>
           {operationType === OPERATION_TYPE.ADD_USER ? (
             <Form.Item
               label="密码"
-              name="menus"
+              name="password"
               // 声明式校验
               rules={[{ required: true, message: "请输入密码" }]}
+              labelCol={{ span: 4, offset: 1 }}
+              wrapperCol={{ span: 12, offset: 1 }}
             >
               <Input.Password
                 placeholder="密码"
@@ -214,6 +232,8 @@ export default function UserComponent() {
             name="phone"
             // 声明式校验
             rules={[{ required: true, message: "请输入电话号码" }]}
+            labelCol={{ span: 4, offset: 1 }}
+            wrapperCol={{ span: 12, offset: 1 }}
           >
             <Input placeholder="电话号码" />
           </Form.Item>
@@ -222,6 +242,8 @@ export default function UserComponent() {
             name="email"
             // 声明式校验
             rules={[{ required: true, message: "请输入邮箱" }]}
+            labelCol={{ span: 4, offset: 1 }}
+            wrapperCol={{ span: 12, offset: 1 }}
           >
             <Input placeholder="邮箱" />
           </Form.Item>
@@ -229,6 +251,8 @@ export default function UserComponent() {
             label="角色"
             name="role_id"
             rules={[{ required: true, message: "请选择角色" }]}
+            labelCol={{ span: 4, offset: 1 }}
+            wrapperCol={{ span: 12, offset: 1 }}
           >
             <Select placeholder="角色">
               {roleList.map((role) => {

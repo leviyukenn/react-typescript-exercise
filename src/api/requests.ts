@@ -114,7 +114,9 @@ export async function reqUpdateRole(
   });
 }
 
-export async function reqGetUserList(): Promise<Response<{users:User[],roles:Role[]}>> {
+export async function reqGetUserList(): Promise<
+  Response<{ users: User[]; roles: Role[] }>
+> {
   return myAxios.get("/manage/user/list");
 }
 
@@ -124,14 +126,14 @@ export async function reqGetUserList(): Promise<Response<{users:User[],roles:Rol
 // |email       |N       |string   |邮箱
 // |role_id     |N       |string   |角色ID
 export async function reqAddUser(
-  userName: string,
+  username: string,
   password: string,
   phone: string,
   email: string,
   role_id: string
 ): Promise<Response<User>> {
   return myAxios.post("/manage/user/add", {
-    userName,
+    username,
     password,
     phone,
     email,
@@ -146,14 +148,14 @@ export async function reqAddUser(
 // |role_id     |N       |string   |角色ID
 export async function reqUpdateUser(
   _id: string,
-  userName: string,
+  username: string,
   phone: string,
   email: string,
   role_id: string
 ): Promise<Response<User>> {
   return myAxios.post("/manage/user/update", {
     _id,
-    userName,
+    username,
     phone,
     email,
     role_id,

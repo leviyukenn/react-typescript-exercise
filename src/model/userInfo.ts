@@ -1,4 +1,4 @@
 export interface UserInfo {
   username: string;
-  [propName: string]: any;
+  role?: { menus: string[] };
 }
